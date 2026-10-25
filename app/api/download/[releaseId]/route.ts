@@ -13,7 +13,16 @@ interface RouteParams {
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { releaseId } = await params
-    const release = await getReleaseById(releaseId)
+    const adminClient = createAdminClient()
+
+    let release = null
+    if (adminClient) {
+      const { data } = await adminClient.from('releases').select('*').eq('id', releaseId).maybeSingle()
+      release = data
+    }
+    if (!release) {
+      release = await getReleaseById(releaseId)
+    }
 
     if (!release) {
       return NextResponse.json({ error: 'Release not found' }, { status: 404 })
@@ -27,8 +36,16 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 
     // Protect releases belonging to draft or archived products from public access
-    const { getProductById } = await import('@/lib/data')
-    const parentProduct = await getProductById(release.product_id)
+    let parentProduct = null
+    if (adminClient) {
+      const { data } = await adminClient.from('products').select('*').eq('id', release.product_id).maybeSingle()
+      parentProduct = data
+    }
+    if (!parentProduct) {
+      const { getProductById } = await import('@/lib/data')
+      parentProduct = await getProductById(release.product_id)
+    }
+
     if (!adminUser && parentProduct && parentProduct.status !== 'published') {
       return NextResponse.json({ error: 'This product and its releases are not publicly accessible.' }, { status: 403 })
     }
@@ -52,7 +69,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 
     // Honest download tracking with deduplication (same IP hash within 1 hour is not counted twice)
-    const adminClient = createAdminClient()
     if (adminClient) {
       try {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
