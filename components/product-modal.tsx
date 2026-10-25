@@ -63,7 +63,24 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
         <img src={product.cover_image_url} alt={product.cover_image_alt || `${product.title} preview`} />
 
         <div className="modal-content">
-          <span className="category-badge">{product.category}</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+            <span className="category-badge">{product.category}</span>
+            {product.supported_platforms?.map((plat) => {
+              const lower = plat.toLowerCase()
+              const badgeClass = lower.includes('win')
+                ? 'platform-badge windows'
+                : lower.includes('android')
+                ? 'platform-badge android'
+                : lower.includes('web')
+                ? 'platform-badge web'
+                : 'platform-badge'
+              return (
+                <span key={plat} className={badgeClass}>
+                  {plat}
+                </span>
+              )
+            })}
+          </div>
           <h2 id="product-title">{product.title}</h2>
           <p>{product.full_description || product.short_description}</p>
 
@@ -77,8 +94,12 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               {displaySize}
             </span>
             <span>
-              <small>DOWNLOADS</small>
-              {displayDownloads}
+              <small>{release && release.download_count > 0 ? 'DOWNLOADS' : 'PLATFORMS'}</small>
+              {release && release.download_count > 0
+                ? `${release.download_count} verified`
+                : product.supported_platforms?.length
+                ? product.supported_platforms.join(', ')
+                : product.category}
             </span>
           </div>
 

@@ -23,10 +23,11 @@ export function PublicHeader({ settings }: PublicHeaderProps) {
       </Link>
 
       <nav className="desktop-nav" aria-label="Primary navigation">
-        <Link href="/#work">Work</Link>
-        <Link href="/#insights">Insights</Link>
+        <Link href="/#top">Home</Link>
+        <Link href="/#applications">Applications</Link>
+        <Link href="/insights">Articles</Link>
         <Link href="/#media">Media</Link>
-        <Link href="/#contact">Contact</Link>
+        <Link href="/#contact">About / Contact</Link>
       </nav>
 
       <div className="header-actions">
@@ -56,17 +57,20 @@ export function PublicHeader({ settings }: PublicHeaderProps) {
 
       {mobileOpen && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          <Link href="/#work" onClick={() => setMobileOpen(false)}>
-            Work
+          <Link href="/#top" onClick={() => setMobileOpen(false)}>
+            Home
           </Link>
-          <Link href="/#insights" onClick={() => setMobileOpen(false)}>
-            Insights
+          <Link href="/#applications" onClick={() => setMobileOpen(false)}>
+            Applications
+          </Link>
+          <Link href="/insights" onClick={() => setMobileOpen(false)}>
+            Articles
           </Link>
           <Link href="/#media" onClick={() => setMobileOpen(false)}>
             Media
           </Link>
           <Link href="/#contact" onClick={() => setMobileOpen(false)}>
-            Contact
+            About / Contact
           </Link>
           <Link
             href="/admin"

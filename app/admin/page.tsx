@@ -13,6 +13,7 @@ import {
   Database,
   Globe,
   Sparkles,
+  Video,
 } from 'lucide-react'
 import { getCurrentAdminUser } from '@/lib/auth'
 import {
@@ -118,6 +119,223 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Quick Management Actions Shortcuts */}
+      <div
+        style={{
+          background: 'linear-gradient(180deg, #10161b 0%, #0d1216 100%)',
+          border: '1px solid #283139',
+          borderRadius: '14px',
+          padding: '20px 24px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <div className="section-label" style={{ fontSize: '10px', marginBottom: '2px' }}>
+              <span className="section-dot" /> ESSENTIAL ACTIONS
+            </div>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#eef1f4' }}>
+              Quick Management Shortcuts
+            </h2>
+          </div>
+          <span style={{ fontSize: '11px', color: '#74808a' }}>Fast-path publishing</span>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          {/* 1. Add Application */}
+          <Link
+            href="/admin/products/new"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px 16px',
+              background: '#0a0e12',
+              border: '1px solid #202930',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(183, 255, 99, 0.1)',
+                border: '1px solid rgba(183, 255, 99, 0.25)',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#b7ff63',
+                flexShrink: 0,
+              }}
+            >
+              <Plus style={{ width: '18px', height: '18px' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#eef1f4' }}>Add Application</div>
+              <div style={{ fontSize: '11px', color: '#74808a' }}>New software item</div>
+            </div>
+          </Link>
+
+          {/* 2. Add Article */}
+          <Link
+            href="/admin/insights/new"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px 16px',
+              background: '#0a0e12',
+              border: '1px solid #202930',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(198, 145, 255, 0.1)',
+                border: '1px solid rgba(198, 145, 255, 0.25)',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#c691ff',
+                flexShrink: 0,
+              }}
+            >
+              <FileText style={{ width: '18px', height: '18px' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#eef1f4' }}>Add Article</div>
+              <div style={{ fontSize: '11px', color: '#74808a' }}>Publish field note</div>
+            </div>
+          </Link>
+
+          {/* 3. Upload Media */}
+          <Link
+            href="/admin/media-section"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px 16px',
+              background: '#0a0e12',
+              border: '1px solid #202930',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(114, 184, 255, 0.1)',
+                border: '1px solid rgba(114, 184, 255, 0.25)',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#72b8ff',
+                flexShrink: 0,
+              }}
+            >
+              <Video style={{ width: '18px', height: '18px' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#eef1f4' }}>Upload Media</div>
+              <div style={{ fontSize: '11px', color: '#74808a' }}>Video & demos</div>
+            </div>
+          </Link>
+
+          {/* 4. Manage Releases */}
+          <Link
+            href="/admin/products"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px 16px',
+              background: '#0a0e12',
+              border: '1px solid #202930',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(255, 191, 123, 0.1)',
+                border: '1px solid rgba(255, 191, 123, 0.25)',
+                display: 'grid',
+                placeItems: 'center',
+                color: '#ffbf7b',
+                flexShrink: 0,
+              }}
+            >
+              <Package style={{ width: '18px', height: '18px' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#eef1f4' }}>Manage Releases</div>
+              <div style={{ fontSize: '11px', color: '#74808a' }}>Binary versions</div>
+            </div>
+          </Link>
+
+          {/* 5. View Messages */}
+          <Link
+            href="/admin/messages"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px 16px',
+              background: '#0a0e12',
+              border: '1px solid #202930',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: unreadMessages.length > 0 ? 'rgba(183, 255, 99, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                border: unreadMessages.length > 0 ? '1px solid rgba(183, 255, 99, 0.4)' : '1px solid #283139',
+                display: 'grid',
+                placeItems: 'center',
+                color: unreadMessages.length > 0 ? '#b7ff63' : '#a0abb4',
+                flexShrink: 0,
+              }}
+            >
+              <Mail style={{ width: '18px', height: '18px' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#eef1f4' }}>
+                View Messages {unreadMessages.length > 0 && <span style={{ color: '#b7ff63', fontSize: '11px' }}>({unreadMessages.length})</span>}
+              </div>
+              <div style={{ fontSize: '11px', color: '#74808a' }}>Client conversations</div>
+            </div>
+          </Link>
+        </div>
+      </div>
 
       {/* Real Metric Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>

@@ -9,9 +9,12 @@ import {
   Code2,
   Download,
   ExternalLink,
+  Globe,
+  Laptop,
   Menu,
   Play,
   Send,
+  Smartphone,
   Sparkles,
   X,
   Zap,
@@ -80,10 +83,11 @@ export function PortfolioPortal({
         </a>
 
         <nav className="desktop-nav" aria-label="Primary navigation">
-          <a href="#work">Work</a>
-          <a href="#insights">Insights</a>
+          <a href="#top">Home</a>
+          <a href="#applications">Applications</a>
+          <a href="#articles">Articles</a>
           <a href="#media">Media</a>
-          <a href="#contact">Contact</a>
+          <a href="#contact">About / Contact</a>
         </nav>
 
         <div className="header-actions">
@@ -115,22 +119,25 @@ export function PortfolioPortal({
       {/* Mobile Nav */}
       {mobileOpen && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          <a href="#work" onClick={() => setMobileOpen(false)}>
-            Work
+          <a href="#top" onClick={() => setMobileOpen(false)}>
+            Home
           </a>
-          <a href="#insights" onClick={() => setMobileOpen(false)}>
-            Insights
+          <a href="#applications" onClick={() => setMobileOpen(false)}>
+            Applications
+          </a>
+          <a href="#articles" onClick={() => setMobileOpen(false)}>
+            Articles
           </a>
           <a href="#media" onClick={() => setMobileOpen(false)}>
             Media
           </a>
           <a href="#contact" onClick={() => setMobileOpen(false)}>
-            Contact
+            About / Contact
           </a>
           <Link
             href="/admin"
             onClick={() => setMobileOpen(false)}
-            style={{ color: '#b7ff63', fontWeight: 600 }}
+            style={{ color: '#b7ff63', fontWeight: 600, marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}
           >
             Admin portal →
           </Link>
@@ -142,7 +149,7 @@ export function PortfolioPortal({
         <div className="hero-copy">
           <div className="eyebrow">
             <span className="eyebrow-line" />
-            {settings.hero_eyebrow}
+            {settings.hero_eyebrow || 'AI APP BUILDER & IT ENTERPRISE SALES SPECIALIST'}
           </div>
 
           <h1>
@@ -154,13 +161,13 @@ export function PortfolioPortal({
 
           <p className="hero-description">{settings.hero_description}</p>
 
-          <div className="hero-actions">
+          <div className="hero-actions" style={{ flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
             <Button
               size="lg"
               className="primary-button"
-              onClick={() => document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => (document.getElementById('applications') || document.getElementById('work'))?.scrollIntoView({ behavior: 'smooth' })}
             >
-              {settings.hero_primary_cta_text} <ChevronRight data-icon="inline-end" />
+              Explore Applications <ChevronRight data-icon="inline-end" />
             </Button>
             <button
               className="text-link"
@@ -169,6 +176,20 @@ export function PortfolioPortal({
             >
               {settings.hero_secondary_cta_text} <ArrowUpRight />
             </button>
+            <a
+              href="#articles"
+              style={{
+                fontSize: '12px',
+                color: '#7b8791',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                marginLeft: '8px',
+              }}
+            >
+              Latest Articles ↓
+            </a>
           </div>
 
           {/* Hero Statistics */}
@@ -259,11 +280,12 @@ export function PortfolioPortal({
         </div>
       </section>
 
-      {/* Work / Software Showcase Section */}
-      <section className="section container" id="work">
+      {/* Applications / Software Showcase Section */}
+      <section className="section container" id="applications">
+        <span id="work" className="sr-only" aria-hidden="true" />
         <div className="section-heading">
           <div>
-            <SectionLabel>{settings.work_section_label}</SectionLabel>
+            <SectionLabel>{settings.work_section_label || 'APPLICATIONS / SOFTWARE SHOWCASE'}</SectionLabel>
             <h2>
               {settings.work_title} <span>{settings.work_title_accent}</span>
             </h2>
@@ -294,7 +316,49 @@ export function PortfolioPortal({
             const rel = product.current_release || (product.releases && product.releases[0])
             const displayVersion = rel?.version || 'v1.0.0'
             const displaySize = rel?.file_size_formatted || 'Cloud Web'
-            const displayDownloads = product.portfolio_download_display || 'Verified'
+
+            // Determine platform badges based on actual database attributes
+            const platforms: Array<'Windows' | 'Android' | 'Web'> = []
+            const platStrings = (product.supported_platforms || []).map((p) => p.toLowerCase())
+            if (
+              platStrings.some((p) => p.includes('win')) ||
+              product.category === 'Windows EXE' ||
+              rel?.package_type === 'exe' ||
+              rel?.package_type === 'msi'
+            ) {
+              platforms.push('Windows')
+            }
+            if (
+              platStrings.some((p) => p.includes('android')) ||
+              product.category === 'Mobile APK' ||
+              rel?.package_type === 'apk'
+            ) {
+              platforms.push('Android')
+            }
+            if (
+              platStrings.some((p) => p.includes('web')) ||
+              product.category === 'Web apps' ||
+              rel?.package_type === 'external_web' ||
+              product.live_demo_url ||
+              product.external_website_url
+            ) {
+              platforms.push('Web')
+            }
+            if (platforms.length === 0) {
+              platforms.push('Web')
+            }
+
+            const isWindows = platforms.includes('Windows')
+            const isAndroid = platforms.includes('Android')
+            const isWeb = platforms.includes('Web')
+            const AppIcon = isWindows ? Laptop : isAndroid ? Smartphone : isWeb ? Globe : Sparkles
+
+            const isWebApp = isWeb && (rel?.package_type === 'external_web' || product.category === 'Web apps')
+            const targetUrl = isWebApp
+              ? rel?.external_launch_url || product.live_demo_url || product.external_website_url
+              : rel?.id
+              ? `/api/download/${rel.id}`
+              : null
 
             return (
               <article
@@ -318,24 +382,104 @@ export function PortfolioPortal({
                 </div>
 
                 <div className="product-content">
-                  <div className="product-meta">
+                  {/* Platform Badges */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                    {platforms.map((p) => {
+                      const lower = p.toLowerCase()
+                      const badgeClass = lower.includes('win')
+                        ? 'platform-badge windows'
+                        : lower.includes('android')
+                        ? 'platform-badge android'
+                        : lower.includes('web')
+                        ? 'platform-badge web'
+                        : 'platform-badge'
+                      return (
+                        <span key={p} className={badgeClass}>
+                          {p}
+                        </span>
+                      )
+                    })}
+                  </div>
+
+                  {/* Header with App Icon */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <div
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '6px',
+                        background: 'rgba(183, 255, 99, 0.08)',
+                        border: '1px solid rgba(183, 255, 99, 0.2)',
+                        display: 'grid',
+                        placeItems: 'center',
+                        color: '#b7ff63',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <AppIcon style={{ width: '13px', height: '13px' }} />
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#eef1f4' }}>{product.title}</h3>
+                  </div>
+
+                  <p>{product.short_description}</p>
+
+                  <div className="product-meta" style={{ marginTop: 'auto', paddingTop: '8px' }}>
                     <span>{displayVersion}</span>
                     <span>{displaySize}</span>
+                    {rel && rel.download_count > 0 && (
+                      <span style={{ color: '#b7ff63' }}>{rel.download_count} dl</span>
+                    )}
                   </div>
-                  <h3>{product.title}</h3>
-                  <p>{product.short_description}</p>
-                  <div className="tag-row">
+
+                  <div className="tag-row" style={{ marginTop: '8px' }}>
                     {product.tags.map((tag) => (
                       <span key={tag}>{tag}</span>
                     ))}
                   </div>
-                  <div className="product-footer">
-                    <span>
-                      <Download /> {displayDownloads} downloads
-                    </span>
-                    <span className="open-link">
-                      View details <ArrowUpRight />
-                    </span>
+
+                  {/* Direct Action Bar */}
+                  <div className="card-actions-bar" style={{ marginTop: '14px' }}>
+                    <button
+                      type="button"
+                      className="card-action-details"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedProduct(product)
+                      }}
+                    >
+                      View Details
+                    </button>
+                    {targetUrl ? (
+                      <a
+                        href={targetUrl}
+                        target={isWebApp ? '_blank' : undefined}
+                        rel="noopener noreferrer"
+                        className="card-action-download"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isWebApp ? (
+                          <>
+                            <ExternalLink style={{ width: '12px', height: '12px' }} /> Open App
+                          </>
+                        ) : (
+                          <>
+                            <Download style={{ width: '12px', height: '12px' }} /> Download
+                          </>
+                        )}
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        className="card-action-download"
+                        style={{ opacity: 0.8 }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedProduct(product)
+                        }}
+                      >
+                        Details
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>
@@ -345,7 +489,8 @@ export function PortfolioPortal({
       </section>
 
       {/* Field Notes / Insights Section */}
-      <section className="section insights-section container" id="insights">
+      <section className="section insights-section container" id="articles">
+        <span id="insights" className="sr-only" aria-hidden="true" />
         <div className="section-heading">
           <div>
             <SectionLabel>{settings.insights_section_label}</SectionLabel>
@@ -412,6 +557,28 @@ export function PortfolioPortal({
               alt={featuredMedia?.title || 'Abstract workspace with colorful interface designs'}
             />
             <div className="video-shade" />
+            {featuredMedia && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  left: '16px',
+                  zIndex: 2,
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  padding: '3px 10px',
+                  borderRadius: '99px',
+                  background: 'rgba(10, 15, 20, 0.85)',
+                  color: '#b7ff63',
+                  border: '1px solid rgba(183, 255, 99, 0.3)',
+                  textTransform: 'uppercase',
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                {featuredMedia.video_type === 'uploaded' ? 'DIRECT STREAM' : featuredMedia.video_type}
+              </span>
+            )}
             <button
               className="video-play"
               aria-label="Play featured demo"
@@ -456,70 +623,99 @@ export function PortfolioPortal({
                 gap: '20px',
               }}
             >
-              {galleryVideos.map((item) => (
-                <article
-                  key={item.id}
-                  className="product-card"
-                  onClick={() => setSelectedVideo(item)}
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && setSelectedVideo(item)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    background: '#10161b',
-                    border: '1px solid #283139',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                  }}
-                  aria-label={`Play ${item.title}`}
-                >
-                  <div
+              {galleryVideos.map((item) => {
+                const isYoutube = item.video_type === 'youtube'
+                const isInstagram = item.video_type === 'instagram'
+                const isFacebook = item.video_type === 'facebook'
+                const isVimeo = item.video_type === 'vimeo'
+
+                const providerBadgeStyle = {
+                  position: 'absolute' as const,
+                  top: '12px',
+                  left: '12px',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase' as const,
+                  background: isYoutube
+                    ? 'rgba(255, 0, 51, 0.85)'
+                    : isInstagram
+                    ? 'rgba(225, 48, 108, 0.85)'
+                    : isFacebook
+                    ? 'rgba(24, 119, 242, 0.85)'
+                    : isVimeo
+                    ? 'rgba(26, 183, 234, 0.85)'
+                    : 'rgba(183, 255, 99, 0.2)',
+                  color: '#fff',
+                  backdropFilter: 'blur(4px)',
+                }
+
+                return (
+                  <article
+                    key={item.id}
+                    className="product-card"
+                    onClick={() => setSelectedVideo(item)}
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedVideo(item)}
                     style={{
-                      position: 'relative',
-                      height: '170px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      background: '#10161b',
+                      border: '1px solid #283139',
+                      borderRadius: '12px',
                       overflow: 'hidden',
-                      background: '#0a0e12',
                     }}
+                    aria-label={`Play ${item.title}`}
                   >
-                    <img
-                      src={item.thumbnail_url}
-                      alt={item.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
-                    />
-                    <div className="image-overlay" />
-                    <span className="category-badge" style={{ position: 'absolute', top: '12px', left: '12px' }}>
-                      {item.video_type.toUpperCase()}
-                    </span>
-                    <button
-                      className="preview-button"
-                      aria-label={`Play ${item.title}`}
+                    <div
                       style={{
-                        position: 'absolute',
-                        right: '12px',
-                        bottom: '12px',
+                        position: 'relative',
+                        height: '170px',
+                        overflow: 'hidden',
+                        background: '#0a0e12',
                       }}
                     >
-                      <Play style={{ width: '14px', fill: 'currentColor' }} />
-                    </button>
-                    {item.duration_label && (
-                      <span
+                      <img
+                        src={item.thumbnail_url}
+                        alt={item.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+                      />
+                      <div className="image-overlay" />
+                      <span style={providerBadgeStyle}>
+                        {item.video_type === 'uploaded' ? 'DIRECT STREAM' : item.video_type}
+                      </span>
+                      <button
+                        className="preview-button"
+                        aria-label={`Play ${item.title}`}
                         style={{
                           position: 'absolute',
-                          left: '12px',
+                          right: '12px',
                           bottom: '12px',
-                          background: 'rgba(0, 0, 0, 0.75)',
-                          color: '#eef1f4',
-                          fontSize: '9px',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontFamily: 'monospace',
                         }}
                       >
-                        {item.duration_label}
-                      </span>
-                    )}
-                  </div>
+                        <Play style={{ width: '14px', fill: 'currentColor' }} />
+                      </button>
+                      {item.duration_label && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: '12px',
+                            bottom: '12px',
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            color: '#eef1f4',
+                            fontSize: '9px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                          }}
+                        >
+                          {item.duration_label}
+                        </span>
+                      )}
+                    </div>
 
                   <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                     <div>
@@ -546,7 +742,8 @@ export function PortfolioPortal({
                     </div>
                   </div>
                 </article>
-              ))}
+              )
+              })}
             </div>
           </div>
         )}
