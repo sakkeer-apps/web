@@ -1,0 +1,138 @@
+// lib/validations.ts - Zod validation schemas for server-side validation
+
+import { z } from 'zod'
+
+export const productSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(100),
+  slug: z.string().min(2).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  short_description: z.string().min(10, 'Short description must be at least 10 characters').max(300),
+  full_description: z.string().optional().default(''),
+  category: z.enum(['AI tools', 'Web apps', 'Mobile APK', 'Windows EXE']),
+  accent: z.enum(['cyan', 'violet', 'amber', 'emerald', 'blue', 'rose']).default('cyan'),
+  cover_image_url: z.string().url('Must be a valid URL'),
+  cover_image_alt: z.string().optional().default(''),
+  gallery: z.array(z.object({
+    url: z.string().url(),
+    alt: z.string().optional().default(''),
+  })).optional().default([]),
+  tags: z.array(z.string()).default([]),
+  display_order: z.number().int().default(0),
+  is_featured: z.boolean().default(false),
+  supported_platforms: z.array(z.string()).default([]),
+  system_requirements: z.string().optional().default(''),
+  status: z.enum(['draft', 'published', 'archived']).default('published'),
+  portfolio_download_display: z.string().optional().default(''),
+  external_website_url: z.string().url().or(z.literal('')).optional().default(''),
+  live_demo_url: z.string().url().or(z.literal('')).optional().default(''),
+  repo_url: z.string().url().or(z.literal('')).optional().default(''),
+})
+
+export const releaseSchema = z.object({
+  product_id: z.string().uuid(),
+  version: z.string().min(1, 'Version is required').regex(/^v?[0-9]+(\.[0-9]+)*(-[a-zA-Z0-9.]+)?$/, 'Format like v1.0.0 or 1.0.0'),
+  release_notes: z.string().optional().default(''),
+  release_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').default(() => new Date().toISOString().split('T')[0]),
+  package_type: z.enum(['apk', 'exe', 'msi', 'zip', 'external_web']),
+  file_name: z.string().optional().default(''),
+  storage_path: z.string().optional().default(''),
+  file_size_bytes: z.number().int().nonnegative().default(0),
+  file_size_formatted: z.string().optional().default(''),
+  file_checksum_sha256: z.string().optional().default(''),
+  external_launch_url: z.string().url().or(z.literal('')).optional().default(''),
+  is_published: z.boolean().default(true),
+  safety_scan_status: z.enum(['unscanned', 'pending', 'clean', 'flagged']).default('unscanned'),
+  safety_scan_provider: z.string().default('Self-hosted Author Upload'),
+  safety_scan_notes: z.string().default('Binary uploaded directly by software author.'),
+})
+
+export const articleSchema = z.object({
+  title: z.string().min(3, 'Title is required').max(200),
+  slug: z.string().min(2).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  category: z.string().min(2).max(50),
+  excerpt: z.string().min(10, 'Excerpt must be at least 10 characters').max(500),
+  body_markdown: z.string().optional().default(''),
+  cover_image_url: z.string().url().or(z.literal('')).optional().default(''),
+  reading_time_minutes: z.number().int().min(1).default(5),
+  published_date_formatted: z.string().optional().default(''),
+  is_published: z.boolean().default(true),
+  display_order: z.number().int().default(0),
+  seo_title: z.string().max(100).optional().default(''),
+  seo_description: z.string().max(250).optional().default(''),
+})
+
+export const mediaHighlightSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(150),
+  description: z.string().optional().default(''),
+  caption: z.string().optional().default(''),
+  thumbnail_url: z.string().url('Thumbnail must be a valid URL'),
+  video_type: z.enum(['youtube', 'vimeo', 'facebook', 'instagram', 'uploaded', 'none']),
+  video_url: z.string().optional().default(''),
+  duration_label: z.string().optional().default(''),
+  display_order: z.number().int().default(0),
+  is_featured: z.boolean().default(false),
+  is_published: z.boolean().default(true),
+})
+
+
+export const contactSubmissionSchema = z.object({
+  name: z.string().trim().min(2, 'Please enter your name').max(100),
+  email: z.string().trim().email('Please enter a valid email address').max(120),
+  subject: z.string().trim().max(150).optional().default(''),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters').max(3000),
+  // Honeypot field for spam prevention - must be empty
+  website_hp: z.string().max(0, 'Spam detected').optional(),
+})
+
+export const siteSettingsSchema = z.object({
+  brand_name: z.string().min(1).max(100),
+  brand_title: z.string().min(1).max(150),
+  logo_url: z.string().url().or(z.literal('')).nullable().optional(),
+  favicon_url: z.string().url().or(z.literal('')).nullable().optional(),
+  availability_badge_text: z.string().min(1).max(100),
+  availability_badge_active: z.boolean().default(true),
+  hero_eyebrow: z.string().min(1).max(150),
+  hero_title_line1: z.string().min(1).max(100),
+  hero_title_accent: z.string().min(1).max(100),
+  hero_title_line2: z.string().min(1).max(100),
+  hero_title_dot: z.string().min(1).max(100),
+  hero_description: z.string().min(10).max(600),
+  hero_primary_cta_text: z.string().min(1).max(60),
+  hero_primary_cta_target: z.string().min(1).max(150),
+  hero_secondary_cta_text: z.string().min(1).max(60),
+  hero_secondary_cta_target: z.string().min(1).max(150),
+  hero_stats: z.array(z.object({
+    value: z.string(),
+    suffix: z.string().default(''),
+    label: z.string(),
+  })).default([]),
+  work_section_label: z.string().min(1).max(100),
+  work_title: z.string().min(1).max(100),
+  work_title_accent: z.string().min(1).max(100),
+  work_description: z.string().min(10).max(500),
+  insights_section_label: z.string().min(1).max(100),
+  insights_title: z.string().min(1).max(100),
+  insights_title_accent: z.string().min(1).max(100),
+  insights_description: z.string().min(10).max(500),
+  media_section_label: z.string().min(1).max(100),
+  media_title: z.string().min(1).max(100),
+  media_title_accent: z.string().min(1).max(100),
+  media_description: z.string().min(10).max(500),
+  media_cta_text: z.string().min(1).max(60),
+  contact_section_label: z.string().min(1).max(100),
+  contact_title: z.string().min(1).max(100),
+  contact_title_accent: z.string().min(1).max(100),
+  contact_description: z.string().min(10).max(500),
+  contact_email: z.string().email(),
+  footer_note: z.string().max(100).default('Designed for the next move.'),
+  copyright_text: z.string().max(100).default('© 2026 MS / ALL RIGHTS RESERVED'),
+  social_links: z.array(z.object({
+    platform: z.enum(['email', 'linkedin', 'github', 'whatsapp', 'facebook', 'instagram', 'youtube', 'snapchat', 'twitter', 'website']),
+    url: z.string(),
+    enabled: z.boolean(),
+  })),
+  seo_title: z.string().min(1).max(150),
+  seo_description: z.string().min(10).max(300),
+  seo_og_image: z.string().url().or(z.literal('')).nullable().optional(),
+  primary_domain: z.string().min(1),
+  secondary_domains: z.array(z.string()).default([]),
+})
