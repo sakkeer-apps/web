@@ -6,7 +6,7 @@ import { MediaAsset } from '@/types'
 
 export default async function AdminMediaPage() {
   const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/admin/login?next=/admin/media')
 
   let initialAssets: MediaAsset[] = []
   const adminClient = createAdminClient()

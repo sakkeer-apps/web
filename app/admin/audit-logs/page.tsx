@@ -1,16 +1,26 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { History, Shield, Clock, User } from 'lucide-react'
 import { getCurrentAdminUser } from '@/lib/auth'
 import { getAuditLogs } from '@/lib/data'
 
 export default async function AdminAuditLogsPage() {
   const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/admin/login?next=/admin/audit-logs')
 
   const logs = await getAuditLogs(100)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '1100px' }}>
+      {/* Breadcrumb Navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+        <Link href="/admin" style={{ color: '#b7ff63', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 600 }}>
+          ← Dashboard
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <span style={{ color: '#89939d' }}>Audit Trail</span>
+      </div>
+
       <div>
         <div className="section-label" style={{ marginBottom: '4px' }}>
           <span className="section-dot" /> SECURITY & AUDIT TRAIL

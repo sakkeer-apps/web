@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Save,
@@ -40,7 +40,13 @@ interface ContentEditorProps {
 
 export function ContentEditor({ initialSettings }: ContentEditorProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'brand' | 'hero' | 'sections' | 'socials' | 'seo'>('brand')
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab = (tabParam && ['brand', 'hero', 'sections', 'socials', 'seo'].includes(tabParam))
+    ? (tabParam as 'brand' | 'hero' | 'sections' | 'socials' | 'seo')
+    : 'brand'
+
+  const [activeTab, setActiveTab] = useState<'brand' | 'hero' | 'sections' | 'socials' | 'seo'>(initialTab)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
 

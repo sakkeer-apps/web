@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   Upload,
   Image as ImageIcon,
@@ -118,6 +119,15 @@ export function MediaLibrary({ initialAssets }: MediaLibraryProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '1100px' }}>
+      {/* Breadcrumb Navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+        <Link href="/admin" style={{ color: '#b7ff63', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 600 }}>
+          ← Dashboard
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <span style={{ color: '#89939d' }}>Photo Library</span>
+      </div>
+
       {/* Header */}
       <div>
         <div className="section-label" style={{ marginBottom: '4px' }}>

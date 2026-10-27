@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowUpRight, Lock, Mail, ShieldAlert, Sparkles, Terminal, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export default function AdminLoginPage() {
+function AdminLoginInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextParam = searchParams.get('next')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,7 +36,9 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Failed to sign in')
       }
 
-      router.push('/admin')
+      // Safe destination: must start with /admin and not external URL
+      const destination = nextParam && nextParam.startsWith('/admin') ? nextParam : '/admin'
+      router.push(destination)
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed')
@@ -288,5 +293,13 @@ export default function AdminLoginPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: '#89939d', fontSize: '13px' }}>Loading owner portal...</div>}>
+      <AdminLoginInner />
+    </Suspense>
   )
 }

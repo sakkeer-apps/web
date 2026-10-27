@@ -5,7 +5,7 @@ import { MessagesInbox } from '@/components/admin/messages-inbox'
 
 export default async function AdminMessagesPage() {
   const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/admin/login?next=/admin/messages')
 
   const messages = await getContactMessages('all')
 

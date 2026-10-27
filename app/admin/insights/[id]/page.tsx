@@ -9,7 +9,7 @@ interface EditInsightPageProps {
 
 export default async function EditInsightPage({ params }: EditInsightPageProps) {
   const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/admin/login?next=/admin/insights')
 
   const { id } = await params
   const articles = await getArticles({ publishedOnly: false })

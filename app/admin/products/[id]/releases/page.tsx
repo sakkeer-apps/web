@@ -8,10 +8,9 @@ interface ProductReleasesPageProps {
 }
 
 export default async function ProductReleasesPage({ params }: ProductReleasesPageProps) {
-  const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
-
   const { id } = await params
+  const user = await getCurrentAdminUser()
+  if (!user) redirect(`/admin/login?next=/admin/products/${id}/releases`)
   const product = await getProductById(id)
 
   if (!product) {

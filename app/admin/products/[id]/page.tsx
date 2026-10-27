@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { getCurrentAdminUser } from '@/lib/auth'
 import { getProductById } from '@/lib/data'
@@ -9,7 +10,7 @@ interface EditProductPageProps {
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const user = await getCurrentAdminUser()
-  if (!user) redirect('/admin/login')
+  if (!user) redirect('/admin/login?next=/admin/products')
 
   const { id } = await params
   const product = await getProductById(id)
@@ -18,5 +19,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     notFound()
   }
 
-  return <ProductForm initialData={product} />
+  return (
+    <Suspense fallback={<div style={{ color: '#89939d', padding: '24px' }}>Loading product editor...</div>}>
+      <ProductForm initialData={product} />
+    </Suspense>
+  )
 }

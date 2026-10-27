@@ -100,6 +100,19 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '900px' }}>
+      {/* Breadcrumb Navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+        <Link href="/admin" style={{ color: '#b7ff63', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 600 }}>
+          ← Dashboard
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <Link href="/admin/insights" style={{ color: '#a1abb2', textDecoration: 'none' }}>
+          Field Notes
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <span style={{ color: '#74808a' }}>{isEditing ? 'Edit' : 'New'}</span>
+      </div>
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

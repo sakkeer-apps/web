@@ -240,6 +240,19 @@ export function ReleasesManager({ product, releases }: ReleasesManagerProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '1000px' }}>
+      {/* Breadcrumb Navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+        <Link href="/admin" style={{ color: '#b7ff63', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none', fontWeight: 600 }}>
+          ← Dashboard
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <Link href="/admin/products" style={{ color: '#a1abb2', textDecoration: 'none' }}>
+          Applications
+        </Link>
+        <span style={{ color: '#52606d' }}>/</span>
+        <span style={{ color: '#74808a' }}>{product.title} Releases</span>
+      </div>
+
       {/* Header */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
