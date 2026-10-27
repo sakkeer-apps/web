@@ -5,12 +5,7 @@ import { getCurrentAdminUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditEvent } from '@/lib/data'
 import { releaseSchema } from '@/lib/validations'
-
-function sanitizeDatabaseError(err: unknown): string {
-  if (!err) return 'An unexpected database error occurred.'
-  const message = err instanceof Error ? err.message : String(err)
-  return message
-}
+import { formatDatabaseError } from '@/lib/db-errors'
 
 export async function saveRelease(formData: Record<string, unknown>) {
   const user = await getCurrentAdminUser()
@@ -102,7 +97,9 @@ export async function saveRelease(formData: Record<string, unknown>) {
     revalidatePath(`/admin/products/${validation.data.product_id}/releases`)
     return { success: true }
   } catch (err: unknown) {
-    return { success: false, error: sanitizeDatabaseError(err) }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'release')
+    console.error('[Admin Releases Action] Error saving release:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }
 
@@ -141,7 +138,9 @@ export async function deleteRelease(releaseId: string, productId: string) {
     revalidatePath(`/admin/products/${productId}/releases`)
     return { success: true }
   } catch (err: unknown) {
-    return { success: false, error: sanitizeDatabaseError(err) }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'release')
+    console.error('[Admin Releases Action] Error deleting release:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }
 
@@ -196,6 +195,8 @@ export async function toggleReleasePublished(releaseId: string, productId: strin
     revalidatePath(`/admin/products/${productId}/releases`)
     return { success: true }
   } catch (err: unknown) {
-    return { success: false, error: sanitizeDatabaseError(err) }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'release')
+    console.error('[Admin Releases Action] Error toggling release status:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }

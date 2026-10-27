@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditEvent } from '@/lib/data'
 import { productSchema } from '@/lib/validations'
 import { fetchGitHubRepositoryDetails, FetchGitHubResult } from '@/lib/github'
+import { formatDatabaseError } from '@/lib/db-errors'
 
 export async function fetchGitHubDetails(url: string): Promise<FetchGitHubResult> {
   const user = await getCurrentAdminUser()
@@ -36,10 +37,20 @@ export async function saveProduct(formData: Record<string, unknown>) {
   }
 
   try {
+    const rawData = { ...validation.data }
+
+    // Map GitHub URL: repo_url is the canonical column in the products table
+    const repoUrl = (rawData.repo_url || rawData.github_url || '').toString().trim()
+
+    // Build database payload mapping strictly to existing columns in public.products
     const payload: Record<string, unknown> = {
-      ...validation.data,
+      ...rawData,
+      repo_url: repoUrl,
       updated_at: new Date().toISOString(),
     }
+
+    // Remove github_url client alias so PostgREST does not fail with PGRST204
+    delete payload.github_url
 
     let savedId = id
 
@@ -51,7 +62,7 @@ export async function saveProduct(formData: Record<string, unknown>) {
         .eq('id', id)
 
       // Fallback if incremental columns (features, github_data, source_type) don't exist in DB yet
-      if (updateRes.error && updateRes.error.message.includes('does not exist')) {
+      if (updateRes.error && (updateRes.error.message.includes('does not exist') || updateRes.error.code === 'PGRST204')) {
         const fallbackPayload = { ...payload }
         delete fallbackPayload.features
         delete fallbackPayload.github_data
@@ -73,7 +84,7 @@ export async function saveProduct(formData: Record<string, unknown>) {
         .single()
 
       // Fallback if incremental columns don't exist in DB yet
-      if (insertRes.error && insertRes.error.message.includes('does not exist')) {
+      if (insertRes.error && (insertRes.error.message.includes('does not exist') || insertRes.error.code === 'PGRST204')) {
         const fallbackPayload = { ...payload }
         delete fallbackPayload.features
         delete fallbackPayload.github_data
@@ -97,8 +108,9 @@ export async function saveProduct(formData: Record<string, unknown>) {
     revalidatePath('/admin/products')
     return { success: true, id: savedId }
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Failed to save product'
-    return { success: false, error: msg }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'product')
+    console.error('[Admin Products Action] Error saving product:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }
 
@@ -126,7 +138,9 @@ export async function deleteProduct(id: string) {
     revalidatePath('/admin/products')
     return { success: true }
   } catch (err: unknown) {
-    return { success: false, error: err instanceof Error ? err.message : 'Delete failed' }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'product')
+    console.error('[Admin Products Action] Error deleting product:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }
 
@@ -150,6 +164,9 @@ export async function toggleProductStatus(id: string, newStatus: 'published' | '
     revalidatePath('/admin/products')
     return { success: true }
   } catch (err: unknown) {
-    return { success: false, error: err instanceof Error ? err.message : 'Status update failed' }
+    const { sanitizedLog, userMessage } = formatDatabaseError(err, 'product')
+    console.error('[Admin Products Action] Error updating product status:', sanitizedLog)
+    return { success: false, error: userMessage }
   }
 }
+

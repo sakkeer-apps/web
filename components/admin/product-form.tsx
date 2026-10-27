@@ -378,7 +378,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
       repo_url: repoUrl.trim(),
       source_type: activeTab,
       features,
-      github_url: repoUrl.trim(),
       github_data: githubData,
     }
 
@@ -934,7 +933,29 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   <input
                     type="url"
                     value={liveDemo}
-                    onChange={(e) => setLiveDemo(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setLiveDemo(val)
+                      if (!title && !isEditing && val) {
+                        try {
+                          const parsed = new URL(val)
+                          const pathSegments = parsed.pathname.split('/').filter(Boolean)
+                          const candidate = pathSegments[pathSegments.length - 1] || parsed.hostname.split('.')[0]
+                          if (candidate && candidate.length > 2) {
+                            const formatted = candidate
+                              .split(/[-_]+/)
+                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .join(' ')
+                            setTitle(formatted)
+                            if (!slug) {
+                              setSlug(candidate.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''))
+                            }
+                          }
+                        } catch {
+                          // Invalid URL while typing, ignore
+                        }
+                      }
+                    }}
                     placeholder="https://app.muhammedsakkeer.com or https://signaldesk.vercel.app"
                     style={{
                       width: '100%',
@@ -1384,6 +1405,21 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     </>
                   )}
                 </Button>
+
+                {!coverImageUrl && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCoverImageUrl('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=85')
+                      if (!coverImageAlt) setCoverImageAlt(`${title || 'Product'} cover preview`)
+                    }}
+                    style={{ borderColor: '#2b353d', fontSize: '11px', color: '#89939d' }}
+                  >
+                    Use Sample Cover
+                  </Button>
+                )}
               </div>
 
               <div>
