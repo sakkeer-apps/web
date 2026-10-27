@@ -6,6 +6,7 @@
 // 4. Server action validation & zero-record error reporting
 // 5. Storage validation and restriction explanations
 
+import './load-env.mjs'
 import { detectVideoProvider, parseVideoEmbedInfo } from '../lib/video-helpers.ts'
 import { mediaHighlightSchema, releaseSchema } from '../lib/validations.ts'
 

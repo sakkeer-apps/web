@@ -57,7 +57,7 @@ export default function ErrorBoundary({
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <Button variant="outline" onClick={() => reset()} style={{ borderColor: '#33404a' }}>
+          <Button type="button" variant="outline" onClick={() => reset()} style={{ borderColor: '#33404a' }}>
             <RefreshCw data-icon="inline-start" /> Retry action
           </Button>
           <Button asChild className="primary-button">

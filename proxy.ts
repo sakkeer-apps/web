@@ -1,9 +1,10 @@
-// middleware.ts - Route protection, security headers, and domain redirection
+// proxy.ts - Route protection, security headers, and domain redirection
+// Next.js 16 Proxy convention (migrated from deprecated middleware convention)
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, host } = request.nextUrl
   const response = NextResponse.next()
 
@@ -36,13 +37,12 @@ export function middleware(request: NextRequest) {
       return response
     }
 
-    // Check for Supabase session cookie or local admin session cookie
+    // Check for authenticated Supabase session cookie (standard or chunked with numeric suffix e.g. .0)
     const hasSupabaseCookie = request.cookies
       .getAll()
-      .some((c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))
-    const hasLocalSession = request.cookies.has('ms_admin_session')
+      .some((c) => c.name.startsWith('sb-') && /-auth-token(\.\d+)?$/.test(c.name))
 
-    if (!hasSupabaseCookie && !hasLocalSession) {
+    if (!hasSupabaseCookie) {
       const loginUrl = new URL('/admin/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)

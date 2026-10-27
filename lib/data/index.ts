@@ -118,8 +118,12 @@ export async function getProducts(options?: {
     }
 
     const { data, error } = await query
-    if (error || !data || data.length === 0) {
-      return defaultProducts
+    if (error) {
+      console.error('Error fetching products from Supabase:', error.message)
+      return []
+    }
+    if (!data || data.length === 0) {
+      return []
     }
 
     return data.map((item) => {
@@ -132,7 +136,7 @@ export async function getProducts(options?: {
     })
   } catch (err) {
     console.error('Error fetching products from Supabase:', err)
-    return defaultProducts
+    return []
   }
 }
 
@@ -150,7 +154,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       .single()
 
     if (error || !data) {
-      return defaultProducts.find((p) => p.slug === slug) || null
+      return null
     }
 
     const proReleases: Release[] = (data.releases || [])
@@ -160,7 +164,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       current_release: proReleases.find((r) => r.is_published) || proReleases[0] || null,
     }
   } catch {
-    return defaultProducts.find((p) => p.slug === slug) || null
+    return null
   }
 }
 
@@ -251,12 +255,17 @@ export async function getArticles(options?: { publishedOnly?: boolean }): Promis
     }
 
     const { data, error } = await query
-    if (error || !data || data.length === 0) {
-      return defaultArticles
+    if (error) {
+      console.error('Error fetching articles from Supabase:', error.message)
+      return []
+    }
+    if (!data || data.length === 0) {
+      return []
     }
     return data
-  } catch {
-    return defaultArticles
+  } catch (err) {
+    console.error('Error fetching articles from Supabase:', err)
+    return []
   }
 }
 
@@ -274,11 +283,11 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
       .single()
 
     if (error || !data) {
-      return defaultArticles.find((a) => a.slug === slug) || null
+      return null
     }
     return data
   } catch {
-    return defaultArticles.find((a) => a.slug === slug) || null
+    return null
   }
 }
 

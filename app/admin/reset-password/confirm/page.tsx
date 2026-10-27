@@ -129,7 +129,7 @@ export default function ResetPasswordConfirmPage() {
               }}
             />
 
-            <Button className="primary-button" style={{ width: '100%' }} size="lg" disabled={loading}>
+            <Button type="submit" className="primary-button" style={{ width: '100%' }} size="lg" disabled={loading}>
               {loading ? 'Updating...' : 'Save and sign in'} <ArrowUpRight data-icon="inline-end" />
             </Button>
           </form>

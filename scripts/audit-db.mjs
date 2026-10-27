@@ -1,6 +1,7 @@
 // scripts/audit-db.mjs
 // Audits the live database schema for media_highlights against migration 20261025000001_media_social_and_release_fixes.sql
 
+import './load-env.mjs'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

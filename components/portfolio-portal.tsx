@@ -98,12 +98,6 @@ export function PortfolioPortal({
             </a>
           )}
 
-          <Button asChild className="header-cta" variant="outline">
-            <Link href="/admin">
-              Admin portal <ArrowUpRight data-icon="inline-end" />
-            </Link>
-          </Button>
-
           <Button
             className="menu-button"
             variant="outline"
@@ -134,13 +128,6 @@ export function PortfolioPortal({
           <a href="#contact" onClick={() => setMobileOpen(false)}>
             About / Contact
           </a>
-          <Link
-            href="/admin"
-            onClick={() => setMobileOpen(false)}
-            style={{ color: '#b7ff63', fontWeight: 600, marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}
-          >
-            Admin portal →
-          </Link>
         </nav>
       )}
 

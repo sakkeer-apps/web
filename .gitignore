@@ -22,3 +22,12 @@ node_modules
 *.tsbuildinfo
 backups/
 .DS_Store
+.pulse/
+
+# Binary package uploads & archives
+*.apk
+*.exe
+*.msi
+*.dmg
+*.zip
+*.tar.gz

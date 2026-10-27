@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, Menu, Sparkles, X } from 'lucide-react'
+import { Menu, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SiteSettings } from '@/types'
 
@@ -38,12 +38,6 @@ export function PublicHeader({ settings }: PublicHeaderProps) {
           </a>
         )}
 
-        <Button asChild className="header-cta" variant="outline">
-          <Link href="/admin">
-            Admin portal <ArrowUpRight data-icon="inline-end" />
-          </Link>
-        </Button>
-
         <Button
           className="menu-button"
           variant="outline"
@@ -71,13 +65,6 @@ export function PublicHeader({ settings }: PublicHeaderProps) {
           </Link>
           <Link href="/#contact" onClick={() => setMobileOpen(false)}>
             About / Contact
-          </Link>
-          <Link
-            href="/admin"
-            onClick={() => setMobileOpen(false)}
-            style={{ color: '#b7ff63', fontWeight: 600 }}
-          >
-            Admin portal →
           </Link>
         </nav>
       )}

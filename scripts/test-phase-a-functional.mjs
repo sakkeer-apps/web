@@ -1,6 +1,7 @@
 // scripts/test-phase-a-functional.mjs
 // Comprehensive Phase A functional verification suite covering all 10 required workflows.
 
+import './load-env.mjs'
 import { createClient } from '@supabase/supabase-js'
 import { detectVideoProvider, parseVideoEmbedInfo } from '../lib/video-helpers.ts'
 import { mediaHighlightSchema, productSchema, releaseSchema } from '../lib/validations.ts'

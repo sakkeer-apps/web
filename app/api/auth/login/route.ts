@@ -3,7 +3,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { setLocalAdminSession } from '@/lib/auth'
 import { logAuditEvent } from '@/lib/data'
 import { checkRateLimit, hashIp } from '@/lib/security'
 
@@ -56,26 +55,27 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error?.message || 'Invalid email or password.' }, { status: 401 })
       }
 
+      // Enforce owner authorization check:
+      // Valid Supabase login alone must NOT grant owner privileges.
+      // Requires role: 'owner' in protected app_metadata to match database is_owner() policy.
+      if (data.user.app_metadata?.role !== 'owner') {
+        // Sign out immediately and clear cookies
+        await supabase.auth.signOut()
+        return NextResponse.json(
+          { error: 'Access denied: This account does not possess owner administration privileges.' },
+          { status: 403 }
+        )
+      }
+
       await logAuditEvent('LOGIN_SUCCESS', 'AUTH', data.user.id, { ipHash: ipH }, email)
       return NextResponse.json({ success: true, user: { email: data.user.email, id: data.user.id } })
     }
 
-    // If Supabase is not yet configured, check if OWNER_INITIAL_PASSWORD is set in env for initial setup
-    const ownerEmail = process.env.OWNER_EMAIL || 'techsakeer@gmail.com'
-    const ownerPass = process.env.OWNER_INITIAL_PASSWORD
-
-    if (ownerPass && email.trim().toLowerCase() === ownerEmail.toLowerCase() && password === ownerPass) {
-      await setLocalAdminSession(email.trim())
-      await logAuditEvent('LOGIN_SUCCESS_LOCAL', 'AUTH', 'owner-local', { ipHash: ipH }, email)
-      return NextResponse.json({ success: true, user: { email, id: 'owner-local' } })
-    }
-
     return NextResponse.json(
       {
-        error:
-          'Invalid credentials or Supabase not configured. Please run `pnpm run seed:admin` or configure .env.local.',
+        error: 'Database authentication service is not configured. Please check NEXT_PUBLIC_SUPABASE_URL and anon key.',
       },
-      { status: 401 }
+      { status: 500 }
     )
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Authentication failed.'

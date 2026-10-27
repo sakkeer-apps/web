@@ -14,10 +14,25 @@ import {
   Globe,
   Share2,
   Info,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SiteSettings, HeroStat, SocialLink } from '@/types'
 import { saveContentSettings } from '@/app/admin/content/actions'
+import { SocialBrandIcon, getPlatformLabel } from '@/components/social-brand-icons'
+import { normalizeSocialUrl } from '@/lib/social-helpers'
+
+const STANDARD_SOCIAL_PLATFORMS: SocialLink['platform'][] = [
+  'email',
+  'linkedin',
+  'github',
+  'whatsapp',
+  'facebook',
+  'instagram',
+  'youtube',
+  'snapchat',
+  'twitter',
+]
 
 interface ContentEditorProps {
   initialSettings: SiteSettings
@@ -75,7 +90,20 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
   // Socials & Footer
   const [footerNote, setFooterNote] = useState(initialSettings.footer_note)
   const [copyrightText, setCopyrightText] = useState(initialSettings.copyright_text)
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(initialSettings.social_links || [])
+
+  const initialSocialMap = new Map(
+    (initialSettings.social_links || []).map((s) => [s.platform.toLowerCase(), s])
+  )
+  const mergedSocialLinks: SocialLink[] = STANDARD_SOCIAL_PLATFORMS.map((platform) => {
+    const existing = initialSocialMap.get(platform)
+    if (existing) return existing
+    return {
+      platform,
+      url: platform === 'email' ? `mailto:${initialSettings.contact_email || 'techsakeer@gmail.com'}` : '',
+      enabled: false,
+    }
+  })
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(mergedSocialLinks)
 
   // SEO
   const [seoTitle, setSeoTitle] = useState(initialSettings.seo_title)
@@ -107,6 +135,26 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
     e.preventDefault()
     setSaving(true)
     setMessage(null)
+
+    // Normalize and validate all social links before saving
+    const normalizedSocials: SocialLink[] = []
+    for (const s of socialLinks) {
+      if (s.enabled && s.url && s.url.trim().length > 0) {
+        const norm = normalizeSocialUrl(s.platform, s.url)
+        if (!norm.valid) {
+          setMessage({
+            type: 'error',
+            text: `Invalid link for ${getPlatformLabel(s.platform)}: ${norm.error || 'Please provide a valid URL'}`,
+          })
+          setSaving(false)
+          return
+        }
+        normalizedSocials.push({ ...s, url: norm.normalizedUrl })
+      } else {
+        const norm = normalizeSocialUrl(s.platform, s.url)
+        normalizedSocials.push({ ...s, url: norm.valid ? norm.normalizedUrl : s.url.trim() })
+      }
+    }
 
     const payload: Partial<SiteSettings> = {
       brand_name: brandName.trim(),
@@ -146,7 +194,7 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
       contact_email: contactEmail.trim(),
       footer_note: footerNote.trim(),
       copyright_text: copyrightText.trim(),
-      social_links: socialLinks,
+      social_links: normalizedSocials,
       seo_title: seoTitle.trim(),
       seo_description: seoDesc.trim(),
       seo_og_image: seoOgImage.trim() || null,
@@ -635,51 +683,116 @@ export function ContentEditor({ initialSettings }: ContentEditorProps) {
               Configured Social Channels (Unconfigured profiles are cleanly hidden)
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {socialLinks.map((s) => (
-                <div
-                  key={s.platform}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 14px',
-                    background: '#0a0e12',
-                    border: '1px solid #232c33',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <input
-                    id={`soc-${s.platform}`}
-                    type="checkbox"
-                    checked={s.enabled}
-                    onChange={(e) => updateSocialLink(s.platform, 'enabled', e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: '#b7ff63' }}
-                  />
-                  <label
-                    htmlFor={`soc-${s.platform}`}
-                    style={{ width: '100px', fontSize: '12px', textTransform: 'capitalize', color: s.enabled ? '#b7ff63' : '#68737c', cursor: 'pointer' }}
-                  >
-                    {s.platform}
-                  </label>
-                  <input
-                    type="text"
-                    value={s.url}
-                    onChange={(e) => updateSocialLink(s.platform, 'url', e.target.value)}
-                    placeholder={s.platform === 'email' ? 'mailto:techsakeer@gmail.com' : `https://${s.platform}.com/...`}
+              {socialLinks.map((s) => {
+                const norm = s.url ? normalizeSocialUrl(s.platform, s.url) : null
+                const testUrl = norm?.valid ? norm.normalizedUrl : s.url.trim()
+
+                return (
+                  <div
+                    key={s.platform}
                     style={{
-                      flex: 1,
-                      height: '36px',
-                      padding: '0 10px',
-                      background: '#11161c',
-                      border: '1px solid #283138',
-                      borderRadius: '6px',
-                      color: '#eef1f4',
-                      fontSize: '12px',
-                      opacity: s.enabled ? 1 : 0.4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 14px',
+                      background: '#0a0e12',
+                      border: '1px solid #232c33',
+                      borderRadius: '8px',
                     }}
-                  />
-                </div>
-              ))}
+                  >
+                    <input
+                      id={`soc-${s.platform}`}
+                      type="checkbox"
+                      checked={s.enabled}
+                      onChange={(e) => updateSocialLink(s.platform, 'enabled', e.target.checked)}
+                      style={{ width: '16px', height: '16px', accentColor: '#b7ff63', cursor: 'pointer' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '130px', flexShrink: 0 }}>
+                      <SocialBrandIcon
+                        platform={s.platform}
+                        style={{
+                          width: '15px',
+                          height: '15px',
+                          color: s.enabled ? '#b7ff63' : '#68737c',
+                        }}
+                      />
+                      <label
+                        htmlFor={`soc-${s.platform}`}
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          color: s.enabled ? '#eef1f4' : '#68737c',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={getPlatformLabel(s.platform)}
+                      >
+                        {getPlatformLabel(s.platform)}
+                      </label>
+                    </div>
+                    <input
+                      type="text"
+                      value={s.url}
+                      onChange={(e) => updateSocialLink(s.platform, 'url', e.target.value)}
+                      onBlur={() => {
+                        if (s.url.trim()) {
+                          const result = normalizeSocialUrl(s.platform, s.url)
+                          if (result.valid && result.normalizedUrl !== s.url) {
+                            updateSocialLink(s.platform, 'url', result.normalizedUrl)
+                          }
+                        }
+                      }}
+                      placeholder={
+                        s.platform === 'email'
+                          ? 'mailto:techsakeer@gmail.com'
+                          : s.platform === 'whatsapp'
+                          ? '+971 50 ... or https://wa.me/...'
+                          : `https://${s.platform}.com/...`
+                      }
+                      style={{
+                        flex: 1,
+                        height: '36px',
+                        padding: '0 10px',
+                        background: '#11161c',
+                        border: '1px solid #283138',
+                        borderRadius: '6px',
+                        color: '#eef1f4',
+                        fontSize: '12px',
+                        opacity: s.enabled ? 1 : 0.4,
+                      }}
+                    />
+                    {s.url.trim() && (
+                      <a
+                        href={testUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          height: '32px',
+                          padding: '0 10px',
+                          background: '#151d24',
+                          border: '1px solid #2a3742',
+                          borderRadius: '6px',
+                          color: '#b7ff63',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          textDecoration: 'none',
+                          whiteSpace: 'nowrap',
+                          transition: 'background 0.15s ease',
+                        }}
+                        title={`Open and test ${getPlatformLabel(s.platform)} link`}
+                      >
+                        <span>Test link</span>
+                        <ExternalLink style={{ width: '11px', height: '11px' }} />
+                      </a>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

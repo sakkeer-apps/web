@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Mail,
@@ -28,6 +28,25 @@ export function MessagesInbox({ initialMessages }: MessagesInboxProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'read' | 'archived'>('all')
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!selectedMessage) return
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setSelectedMessage(null)
+      }
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [selectedMessage])
 
   const filtered = messages.filter((m) => {
     if (activeTab === 'all') return true
@@ -94,6 +113,7 @@ export function MessagesInbox({ initialMessages }: MessagesInboxProps) {
         ).map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setActiveTab(tab.id)}
             style={{
               padding: '6px 14px',
@@ -191,7 +211,7 @@ export function MessagesInbox({ initialMessages }: MessagesInboxProps) {
             aria-modal="true"
             aria-labelledby="msg-title"
           >
-            <button className="modal-close" onClick={() => setSelectedMessage(null)} aria-label="Close message">
+            <button type="button" className="modal-close" onClick={() => setSelectedMessage(null)} aria-label="Close message">
               <X />
             </button>
 

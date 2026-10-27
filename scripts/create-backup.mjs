@@ -2,6 +2,7 @@
 // Creates a safe local JSON snapshot backup of all tables and storage metadata
 // NEVER prints secrets or keys
 
+import './load-env.mjs'
 import fs from 'fs'
 import path from 'path'
 import { createClient } from '@supabase/supabase-js'

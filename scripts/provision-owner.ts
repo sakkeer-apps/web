@@ -103,6 +103,7 @@ async function main() {
     const { error: updateErr } = await supabase.auth.admin.updateUserById(existingUser.id, {
       password,
       email_confirm: true,
+      app_metadata: { role: 'owner' },
       user_metadata: { role: 'owner', name: 'Muhammed Sakkeer' },
     })
 
@@ -116,6 +117,7 @@ async function main() {
       email,
       password,
       email_confirm: true,
+      app_metadata: { role: 'owner' },
       user_metadata: { role: 'owner', name: 'Muhammed Sakkeer' },
     })
 
