@@ -72,6 +72,29 @@ export interface SiteSettings {
   updated_at?: string
 }
 
+export type ProductSourceType = 'upload' | 'webapp' | 'github'
+
+export interface GitHubRepoData {
+  name?: string
+  full_name?: string
+  description?: string
+  html_url?: string
+  homepage?: string
+  stargazers_count?: number
+  forks_count?: number
+  language?: string
+  topics?: string[]
+  license?: string
+  updated_at?: string
+  default_branch?: string
+  open_issues_count?: number
+  is_private?: boolean
+  latest_release_tag?: string
+  latest_release_name?: string
+  latest_release_url?: string
+  fetched_at?: string
+}
+
 export interface Product {
   id: string
   slug: string
@@ -93,6 +116,10 @@ export interface Product {
   external_website_url?: string
   live_demo_url?: string
   repo_url?: string
+  source_type?: ProductSourceType
+  features?: string[]
+  github_url?: string
+  github_data?: GitHubRepoData | null
   created_at?: string
   updated_at?: string
   // Virtual / joined

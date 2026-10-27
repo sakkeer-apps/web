@@ -340,11 +340,18 @@ export function PortfolioPortal({
             const isWeb = platforms.includes('Web')
             const AppIcon = isWindows ? Laptop : isAndroid ? Smartphone : isWeb ? Globe : Sparkles
 
-            const isWebApp = isWeb && (rel?.package_type === 'external_web' || product.category === 'Web apps')
-            const targetUrl = isWebApp
-              ? rel?.external_launch_url || product.live_demo_url || product.external_website_url
-              : rel?.id
-              ? `/api/download/${rel.id}`
+            const isBinaryDownload = Boolean(rel && rel.package_type !== 'external_web' && rel.id)
+            const webAppUrl = rel?.package_type === 'external_web'
+              ? rel.external_launch_url || product.live_demo_url || product.external_website_url
+              : product.live_demo_url || product.external_website_url || null
+            const githubUrl = product.repo_url || product.github_url || null
+
+            const directAction = isBinaryDownload
+              ? { type: 'download', url: `/api/download/${rel!.id}`, label: 'Download', external: false }
+              : webAppUrl
+              ? { type: 'webapp', url: webAppUrl, label: 'Open App', external: true }
+              : githubUrl
+              ? { type: 'github', url: githubUrl, label: 'GitHub', external: true }
               : null
 
             return (
@@ -436,21 +443,25 @@ export function PortfolioPortal({
                     >
                       View Details
                     </button>
-                    {targetUrl ? (
+                    {directAction ? (
                       <a
-                        href={targetUrl}
-                        target={isWebApp ? '_blank' : undefined}
-                        rel="noopener noreferrer"
+                        href={directAction.url}
+                        target={directAction.external ? '_blank' : undefined}
+                        rel={directAction.external ? 'noopener noreferrer' : undefined}
                         className="card-action-download"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {isWebApp ? (
+                        {directAction.type === 'download' ? (
+                          <>
+                            <Download style={{ width: '12px', height: '12px' }} /> Download
+                          </>
+                        ) : directAction.type === 'webapp' ? (
                           <>
                             <ExternalLink style={{ width: '12px', height: '12px' }} /> Open App
                           </>
                         ) : (
                           <>
-                            <Download style={{ width: '12px', height: '12px' }} /> Download
+                            <Code2 style={{ width: '12px', height: '12px' }} /> GitHub
                           </>
                         )}
                       </a>

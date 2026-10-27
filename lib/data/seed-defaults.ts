@@ -147,6 +147,12 @@ export const defaultProducts: Product[] = [
     external_website_url: 'https://signaldesk.example.com',
     live_demo_url: 'https://demo.signaldesk.example.com',
     repo_url: 'https://github.com/example/signaldesk-ai',
+    source_type: 'webapp',
+    features: [
+      'Automated revenue risk extraction from client calls',
+      'Instant action item synthesis for deal leaders',
+      'Multi-tenant workspace isolation with role controls'
+    ],
     current_release: defaultReleases[0],
     releases: [defaultReleases[0]],
   },
@@ -173,6 +179,12 @@ export const defaultProducts: Product[] = [
     external_website_url: '',
     live_demo_url: '',
     repo_url: 'https://github.com/example/fieldflow',
+    source_type: 'upload',
+    features: [
+      'Offline-first synchronization with conflict resolution',
+      'Structured geotagged photo documentation',
+      'Instant PDF field report generation and sharing'
+    ],
     current_release: defaultReleases[1],
     releases: [defaultReleases[1]],
   },
@@ -199,6 +211,12 @@ export const defaultProducts: Product[] = [
     external_website_url: '',
     live_demo_url: '',
     repo_url: 'https://github.com/example/ledgerlens',
+    source_type: 'upload',
+    features: [
+      'Local SQLite analysis engine with zero network latency',
+      'Instant spreadsheet ingestion up to 500k rows',
+      'One-click presentation-ready PDF & CSV financial exports'
+    ],
     current_release: defaultReleases[2],
     releases: [defaultReleases[2]],
   },

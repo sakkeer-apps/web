@@ -5,6 +5,15 @@ import { getCurrentAdminUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditEvent } from '@/lib/data'
 import { productSchema } from '@/lib/validations'
+import { fetchGitHubRepositoryDetails, FetchGitHubResult } from '@/lib/github'
+
+export async function fetchGitHubDetails(url: string): Promise<FetchGitHubResult> {
+  const user = await getCurrentAdminUser()
+  if (!user) {
+    return { success: false, error: 'Unauthorized. Please sign in as owner.' }
+  }
+  return fetchGitHubRepositoryDetails(url)
+}
 
 export async function saveProduct(formData: Record<string, unknown>) {
   const user = await getCurrentAdminUser()
@@ -27,21 +36,34 @@ export async function saveProduct(formData: Record<string, unknown>) {
   }
 
   try {
-    const payload = {
+    const payload: Record<string, unknown> = {
       ...validation.data,
       updated_at: new Date().toISOString(),
     }
 
+    let savedId = id
+
     if (id) {
-      const { error } = await adminClient
+      // First attempt update with full payload
+      let updateRes = await adminClient
         .from('products')
         .update(payload)
         .eq('id', id)
 
-      if (error) throw error
+      // Fallback if incremental columns (features, github_data, source_type) don't exist in DB yet
+      if (updateRes.error && updateRes.error.message.includes('does not exist')) {
+        const fallbackPayload = { ...payload }
+        delete fallbackPayload.features
+        delete fallbackPayload.github_data
+        delete fallbackPayload.source_type
+        updateRes = await adminClient.from('products').update(fallbackPayload).eq('id', id)
+      }
+
+      if (updateRes.error) throw updateRes.error
       await logAuditEvent('PRODUCT_UPDATED', 'PRODUCT', id, { title: payload.title }, user.email)
     } else {
-      const { data, error } = await adminClient
+      // Insert new product
+      let insertRes = await adminClient
         .from('products')
         .insert({
           ...payload,
@@ -50,13 +72,30 @@ export async function saveProduct(formData: Record<string, unknown>) {
         .select('id')
         .single()
 
-      if (error) throw error
-      await logAuditEvent('PRODUCT_CREATED', 'PRODUCT', data?.id || '', { title: payload.title }, user.email)
+      // Fallback if incremental columns don't exist in DB yet
+      if (insertRes.error && insertRes.error.message.includes('does not exist')) {
+        const fallbackPayload = { ...payload }
+        delete fallbackPayload.features
+        delete fallbackPayload.github_data
+        delete fallbackPayload.source_type
+        insertRes = await adminClient
+          .from('products')
+          .insert({
+            ...fallbackPayload,
+            created_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single()
+      }
+
+      if (insertRes.error) throw insertRes.error
+      savedId = insertRes.data?.id
+      await logAuditEvent('PRODUCT_CREATED', 'PRODUCT', savedId || '', { title: payload.title }, user.email)
     }
 
     revalidatePath('/')
     revalidatePath('/admin/products')
-    return { success: true }
+    return { success: true, id: savedId }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Failed to save product'
     return { success: false, error: msg }

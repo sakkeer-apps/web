@@ -25,6 +25,10 @@ export const productSchema = z.object({
   external_website_url: z.string().url().or(z.literal('')).optional().default(''),
   live_demo_url: z.string().url().or(z.literal('')).optional().default(''),
   repo_url: z.string().url().or(z.literal('')).optional().default(''),
+  source_type: z.enum(['upload', 'webapp', 'github']).optional().default('upload'),
+  features: z.array(z.string()).optional().default([]),
+  github_url: z.string().url().or(z.literal('')).optional().default(''),
+  github_data: z.record(z.string(), z.unknown()).nullable().optional(),
 })
 
 export const releaseSchema = z.object({

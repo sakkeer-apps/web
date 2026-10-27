@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentAdminUser } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAuditEvent, getProducts, getArticles, getMediaHighlights, getSiteSettings } from '@/lib/data'
+import { MediaAsset } from '@/types'
 
 export async function checkAssetReferences(assetUrl: string): Promise<string[]> {
   const references: string[] = []
@@ -117,5 +118,24 @@ export async function saveMediaAssetRecord(payload: {
     return { success: true, asset: data }
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : 'Save asset failed' }
+  }
+}
+
+export async function fetchMediaAssetsList(): Promise<MediaAsset[]> {
+  const user = await getCurrentAdminUser()
+  if (!user) return []
+
+  const adminClient = createAdminClient()
+  if (!adminClient) return []
+
+  try {
+    const { data } = await adminClient
+      .from('media_assets')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    return (data as MediaAsset[]) || []
+  } catch {
+    return []
   }
 }

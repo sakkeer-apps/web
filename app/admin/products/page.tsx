@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Package, ExternalLink, ArrowUpRight, Edit3, Trash2, Layers, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Plus, Package, ExternalLink, ArrowUpRight, Edit3, Trash2, Layers, CheckCircle2, AlertCircle, Upload } from 'lucide-react'
 import { getCurrentAdminUser } from '@/lib/auth'
 import { getProducts } from '@/lib/data'
 import { Button } from '@/components/ui/button'
@@ -166,12 +166,17 @@ export default async function AdminProductsPage() {
                       <td style={{ padding: '16px 16px', color: '#89939d' }}>#{p.display_order}</td>
 
                       <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '8px' }}>
-                          <Button asChild size="sm" variant="outline" style={{ borderColor: '#2b353d', fontSize: '11px', color: '#c5ced4' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                          <Button asChild size="sm" className="primary-button" style={{ fontSize: '11px', height: '30px', padding: '0 10px' }}>
+                            <Link href={`/admin/products/${p.id}?tab=upload`}>
+                              <Upload style={{ width: '12px', marginRight: '4px' }} /> Upload version
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm" variant="outline" style={{ borderColor: '#2b353d', fontSize: '11px', height: '30px', padding: '0 10px', color: '#c5ced4' }}>
                             <Link href={`/admin/products/${p.id}`}>Edit</Link>
                           </Button>
-                          <Button asChild size="sm" variant="outline" style={{ borderColor: '#2b353d', fontSize: '11px', color: '#b7ff63' }}>
-                            <Link href={`/admin/products/${p.id}/releases`}>Releases</Link>
+                          <Button asChild size="sm" variant="outline" style={{ borderColor: '#2b353d', fontSize: '11px', height: '30px', padding: '0 10px', color: '#b7ff63' }}>
+                            <Link href={`/admin/products/${p.id}/releases`}>Releases ({releaseCount})</Link>
                           </Button>
                         </div>
                       </td>
